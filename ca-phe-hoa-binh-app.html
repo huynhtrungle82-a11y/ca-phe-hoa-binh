@@ -6,13 +6,46 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;margin:0;color:#2f2a24}.wrap{max-width:520px;margin:auto;padding:20px}.card{background:#fff;border-radius:18px;padding:20px;margin:14px 0;box-shadow:0 4px 18px #0001}h1{font-size:27px}input,button{width:100%;box-sizing:border-box;padding:14px;border-radius:12px;font-size:16px;margin:7px 0}input{border:1px solid #ddd}button{border:0;background:#6b4f35;color:#fff;font-weight:700}.secondary{background:#eee;color:#333}.small{font-size:13px;color:#777}.points{font-size:38px;font-weight:800}.hidden{display:none}.msg{padding:10px;border-radius:10px;background:#fff3cd}.success{background:#dff5e3}.danger{background:#fde2e2}
+.dashboard-title{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.dashboard-title span{font-size:30px}
+.dashboard-sub{margin:0 0 16px;color:#777;font-size:14px}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.stat{border:1px solid #eee;border-radius:15px;padding:14px;background:#faf9f6}
+.stat-label{font-size:13px;color:#777;margin-bottom:5px}
+.stat-value{font-size:25px;font-weight:800}
+.stat-icon{font-size:23px;float:right}
+.tier-box{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 16px}
+.tier{padding:12px;border-radius:14px;background:#faf9f6;border:1px solid #eee}
+.tier b{font-size:20px}
+.tier small{display:block;color:#777;margin-bottom:3px}
+.progress{height:8px;background:#eee;border-radius:99px;overflow:hidden;margin-top:9px}
+.progress i{display:block;height:100%;border-radius:99px;background:#6b4f35}
+@media(max-width:380px){.dashboard-grid,.tier-box{grid-template-columns:1fr}}
 </style>
 </head>
 <body><div class="wrap">
 <div class="card" id="setup"><h1>☕ Cà Phê Hoà Bình</h1><p>Cấu hình lần đầu</p><p class="small">Dán Publishable key đã copy từ Supabase.</p><input id="key" placeholder="sb_publishable_..."><button onclick="saveKey()">Lưu và kết nối</button><div id="setupMsg"></div></div>
 <div class="card hidden" id="login"><h1>☕ Quản lý thành viên</h1><input id="email" type="email" placeholder="Email quản trị"><input id="password" type="password" placeholder="Mật khẩu"><button onclick="login()">Đăng nhập</button><div id="loginMsg"></div></div>
 <div id="app" class="hidden">
-<div class="card" id="dashboardCard"><h2>📊 Tổng quan</h2><div id="dashboardMsg" class="small"></div><p>👥 Tổng khách: <b id="dashCustomers">0</b></p><p>⭐ Tổng điểm: <b id="dashPoints">0</b></p><p>🟤 Member: <b id="dashMember">0</b></p><p>🥈 Silver: <b id="dashSilver">0</b></p><p>🥇 Gold: <b id="dashGold">0</b></p><p>💎 VIP: <b id="dashVip">0</b></p><p>💰 Tổng doanh số: <b id="dashSales">0đ</b></p><button onclick="loadDashboard()">🔄 Cập nhật</button></div>
+<div class="card" id="dashboardCard">
+<div class="dashboard-title"><span>📊</span><h2 style="margin:0">Tổng quan</h2></div>
+<p class="dashboard-sub">Tình hình thành viên và tích điểm Cà Phê Hoà Bình</p>
+<div id="dashboardMsg" class="small"></div>
+<div class="dashboard-grid">
+<div class="stat"><span class="stat-icon">👥</span><div class="stat-label">Tổng khách</div><div class="stat-value" id="dashCustomers">0</div></div>
+<div class="stat"><span class="stat-icon">💰</span><div class="stat-label">Tổng doanh số</div><div class="stat-value" id="dashSales">0đ</div></div>
+<div class="stat"><span class="stat-icon">⭐</span><div class="stat-label">Tổng điểm</div><div class="stat-value" id="dashPoints">0</div></div>
+<div class="stat"><span class="stat-icon">💎</span><div class="stat-label">Khách VIP</div><div class="stat-value" id="dashVip">0</div></div>
+</div>
+<h3 style="margin:16px 0 8px">🏆 Hạng thành viên</h3>
+<div class="tier-box">
+<div class="tier"><small>🟤 Member</small><b id="dashMember">0</b></div>
+<div class="tier"><small>🥈 Silver</small><b id="dashSilver">0</b></div>
+<div class="tier"><small>🥇 Gold</small><b id="dashGold">0</b></div>
+<div class="tier"><small>💎 VIP</small><b id="dashVip2">0</b></div>
+</div>
+<button onclick="loadDashboard()">🔄 Cập nhật Dashboard</button>
+</div>
 <div class="card"><h1>☕ Cà Phê Hoà Bình</h1><p class="small">Quản lý tích điểm khách hàng</p><button class="secondary" onclick="logout()">Đăng xuất</button></div>
 <div class="card"><h2>🔎 Tìm khách hàng</h2><input id="phone" inputmode="tel" placeholder="Số điện thoại"><button onclick="findCustomer()">Tìm khách hàng</button><div id="customerMsg"></div></div>
 <div class="card" id="addCustomerCard"><h2>➕ Thêm khách hàng</h2><input id="newPhone" inputmode="tel" placeholder="Số điện thoại"><input id="newName" placeholder="Tên khách hàng"><button onclick="addCustomer()">Thêm khách hàng</button><div id="addCustomerMsg"></div></div>
@@ -27,7 +60,7 @@ function init(k){try{sb=window.supabase.createClient(PROJECT_URL,k);show("setup"
 function saveKey(){let k=document.getElementById("key").value.trim();if(!k)return msg("setupMsg","Hãy dán Publishable key.");localStorage.setItem("cp_hb_key",k);init(k)}
 async function login(){let email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;if(!sb)return msg("loginMsg","Chưa kết nối Supabase.","msg danger");try{let r=await sb.auth.signInWithPassword({email,password});if(r.error)return msg("loginMsg",r.error.message,"msg danger");show("login",false);show("app",true);await loadDashboard()}catch(e){msg("loginMsg","Không kết nối được Supabase. Hãy tải lại trang rồi thử lại.","msg danger")}}
 async function logout(){await sb.auth.signOut();show("app",false);show("login",true)}
-async function loadDashboard(){let r=await sb.rpc("thong_ke_dashboard");if(r.error)return msg("dashboardMsg","Lỗi tải Dashboard: "+r.error.message,"msg danger");let d=r.data;document.getElementById("dashCustomers").textContent=Number(d.tong_khach||0).toLocaleString("vi-VN");document.getElementById("dashPoints").textContent=Number(d.tong_diem||0).toLocaleString("vi-VN");document.getElementById("dashMember").textContent=Number(d.member||0).toLocaleString("vi-VN");document.getElementById("dashSilver").textContent=Number(d.silver||0).toLocaleString("vi-VN");document.getElementById("dashGold").textContent=Number(d.gold||0).toLocaleString("vi-VN");document.getElementById("dashVip").textContent=Number(d.vip||0).toLocaleString("vi-VN");document.getElementById("dashSales").textContent=Number(d.tong_doanh_so||0).toLocaleString("vi-VN")+"đ"}
+async function loadDashboard(){let r=await sb.rpc("thong_ke_dashboard");if(r.error)return msg("dashboardMsg","Lỗi tải Dashboard: "+r.error.message,"msg danger");let d=r.data;document.getElementById("dashCustomers").textContent=Number(d.tong_khach||0).toLocaleString("vi-VN");document.getElementById("dashPoints").textContent=Number(d.tong_diem||0).toLocaleString("vi-VN");document.getElementById("dashMember").textContent=Number(d.member||0).toLocaleString("vi-VN");document.getElementById("dashSilver").textContent=Number(d.silver||0).toLocaleString("vi-VN");document.getElementById("dashGold").textContent=Number(d.gold||0).toLocaleString("vi-VN");document.getElementById("dashVip").textContent=Number(d.vip||0).toLocaleString("vi-VN");document.getElementById("dashVip2").textContent=Number(d.vip||0).toLocaleString("vi-VN");document.getElementById("dashSales").textContent=Number(d.tong_doanh_so||0).toLocaleString("vi-VN")+"đ"}
 async function findCustomer(){let phone=document.getElementById("phone").value.trim();if(!phone)return msg("customerMsg","Nhập số điện thoại.");let r=await sb.rpc("tim_khach_hang",{p_phone:phone});if(r.error)return msg("customerMsg","Lỗi tìm khách: "+r.error.message,"msg danger");if(!r.data||!r.data.length){show("customerCard",false);return msg("customerMsg","Không tìm thấy khách hàng.")}currentCustomer=r.data[0];msg("pointsMsg","");msg("redeemMsg","");document.getElementById("customerName").textContent=currentCustomer.name||"Khách hàng";document.getElementById("customerPhone").textContent=currentCustomer.phone||"";document.getElementById("customerTier").textContent="Hạng: "+({member:"🟤 Member",silver:"🥈 Silver",gold:"🥇 Gold",vip:"💎 VIP"}[currentCustomer.tier||"member"]||"🟤 Member");document.getElementById("customerPoints").textContent=Number(currentCustomer.total_points||0).toLocaleString("vi-VN");show("customerCard",true);await loadHistory()}
 async function loadCustomers(){let r=await sb.rpc("danh_sach_khach_hang");if(r.error)return msg("customersMsg","Lỗi tải danh sách: "+r.error.message,"msg danger");if(!r.data||!r.data.length){document.getElementById("customersList").innerHTML="Chưa có khách hàng.";return}allCustomers=r.data;renderCustomers(allCustomers);msg("customersMsg",`Có ${r.data.length} khách hàng.` ,"msg success")}
 function renderCustomers(data){document.getElementById("customersList").innerHTML=data.length?data.map(x=>`<div style="padding:12px 0;border-bottom:1px solid #eee"><strong>${x.name||"Khách hàng"}</strong><br>${x.phone||""} · Hạng: ${{member:"🟤 Member",silver:"🥈 Silver",gold:"🥇 Gold",vip:"💎 VIP"}[x.tier||"member"]||"🟤 Member"}<br><strong>${Number(x.total_points||0).toLocaleString("vi-VN")} điểm</strong></div>`).join(""):"Không tìm thấy khách hàng."}
