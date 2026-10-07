@@ -66,7 +66,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 </div>
 <button onclick="loadDashboard()">🔄 Cập nhật Dashboard</button>
 </div>
-<div class="card"><h1>☕ Cà Phê Hoà Bình</h1><p class="small">Quản lý tích điểm khách hàng</p><button class="secondary" onclick="logout()">Đăng xuất</button></div>
+<div class="card"><h1>☕ Cà Phê Hoà Bình</h1><p class="small">Quản lý tích điểm khách hàng</p><button class="secondary" onclick="logout()">Đăng xuất</button></div><div class="card" id="employeeCard">
+<div class="section-head"><h2>👨‍💼 Nhân viên</h2></div>
+<p class="small">Tài khoản đang sử dụng để quản lý Cà Phê Hoà Bình.</p>
+<div class="customer-item" style="cursor:default">
+<strong id="employeeEmail">Đang tải...</strong>
+<div class="customer-meta">🔐 Trạng thái: <b>Đang đăng nhập</b></div>
+<div class="customer-meta">👤 Vai trò: <b id="employeeRole">Quản trị</b></div>
+</div>
+</div>
+
 <div class="card"><div class="section-head"><h2>👥 Quản lý khách hàng</h2></div><p class="small">Tìm nhanh, xem điểm và quản lý thành viên.</p><div class="customer-tools"><div class="customer-search"><input id="phone" inputmode="tel" placeholder="Nhập số điện thoại khách hàng"><button onclick="findCustomer()">🔎</button></div><div id="customerMsg"></div><div class="customer-actions"><button class="secondary" onclick="loadCustomers()">📋 Danh sách</button><button onclick="document.getElementById('newName').focus()">➕ Thêm khách</button></div></div></div>
 <div class="card" id="addCustomerCard"><div class="section-head"><h2>➕ Thêm khách hàng</h2></div><input id="newPhone" inputmode="tel" placeholder="Số điện thoại"><input id="newName" placeholder="Tên khách hàng"><button onclick="addCustomer()">Lưu khách hàng</button><div id="addCustomerMsg"></div></div>
 <div class="card"><div class="section-head"><h2>📋 Danh sách khách</h2><button id="toggleCustomersBtn" type="button" class="secondary" style="width:auto;padding:9px 14px;margin:0" onclick="toggleCustomers()">Thu gọn</button></div><input id="customerFilter" placeholder="🔎 Lọc theo tên hoặc số điện thoại" oninput="filterCustomers()"><div id="customersMsg"></div><div id="customersList" class="customer-list">Chưa tải danh sách.</div></div>
@@ -104,6 +113,19 @@ async function init(k){
 function saveKey(){let k=document.getElementById("key").value.trim();if(!k)return msg("setupMsg","Hãy dán Publishable key.");localStorage.setItem("cp_hb_key",k);init(k)}
 async function login(){let email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;if(!sb)return msg("loginMsg","Chưa kết nối Supabase.","msg danger");try{let r=await sb.auth.signInWithPassword({email,password});if(r.error)return msg("loginMsg",r.error.message,"msg danger");show("login",false);show("app",true);await loadDashboard()}catch(e){msg("loginMsg","Không kết nối được Supabase. Hãy tải lại trang rồi thử lại.","msg danger")}}
 async function logout(){await sb.auth.signOut();show("app",false);show("login",true)}
+async function loadEmployee(){
+  try{
+    const s=await sb.auth.getSession();
+    const user=s.data&&s.data.session?s.data.session.user:null;
+    if(!user)return;
+    document.getElementById("employeeEmail").textContent=user.email||"Tài khoản quản trị";
+    const r=await sb.from("profiles").select("full_name,role").eq("id",user.id).maybeSingle();
+    if(!r.error&&r.data){
+      document.getElementById("employeeEmail").textContent=r.data.full_name||user.email||"Tài khoản";
+      document.getElementById("employeeRole").textContent=r.data.role||"admin";
+    }
+  }catch(e){}
+}
 async function loadDashboard(){let r=await sb.rpc("thong_ke_dashboard");if(r.error)return msg("dashboardMsg","Lỗi tải Dashboard: "+r.error.message,"msg danger");let d=r.data;document.getElementById("dashCustomers").textContent=Number(d.tong_khach||0).toLocaleString("vi-VN");document.getElementById("dashPoints").textContent=Number(d.tong_diem||0).toLocaleString("vi-VN");document.getElementById("dashMember").textContent=Number(d.member||0).toLocaleString("vi-VN");document.getElementById("dashSilver").textContent=Number(d.silver||0).toLocaleString("vi-VN");document.getElementById("dashGold").textContent=Number(d.gold||0).toLocaleString("vi-VN");document.getElementById("dashVip").textContent=Number(d.vip||0).toLocaleString("vi-VN");document.getElementById("dashVip2").textContent=Number(d.vip||0).toLocaleString("vi-VN");
 let maxTier=Math.max(1,Number(d.member||0),Number(d.silver||0),Number(d.gold||0),Number(d.vip||0));
 document.getElementById("barMember").style.width=(Number(d.member||0)/maxTier*100)+"%";
