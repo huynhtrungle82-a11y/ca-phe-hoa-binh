@@ -114,17 +114,27 @@ function saveKey(){let k=document.getElementById("key").value.trim();if(!k)retur
 async function login(){let email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;if(!sb)return msg("loginMsg","Chưa kết nối Supabase.","msg danger");try{let r=await sb.auth.signInWithPassword({email,password});if(r.error)return msg("loginMsg",r.error.message,"msg danger");show("login",false);show("app",true);await loadDashboard()}catch(e){msg("loginMsg","Không kết nối được Supabase. Hãy tải lại trang rồi thử lại.","msg danger")}}
 async function logout(){await sb.auth.signOut();show("app",false);show("login",true)}
 async function loadEmployee(){
+  const nameEl=document.getElementById("employeeEmail");
+  const roleEl=document.getElementById("employeeRole");
   try{
     const s=await sb.auth.getSession();
     const user=s.data&&s.data.session?s.data.session.user:null;
-    if(!user)return;
-    document.getElementById("employeeEmail").textContent=user.email||"Tài khoản quản trị";
+    if(!user){
+      nameEl.textContent="Chưa xác định";
+      roleEl.textContent="Chưa xác định";
+      return;
+    }
+    nameEl.textContent=user.email||"Tài khoản quản trị";
+    roleEl.textContent="Quản trị";
     const r=await sb.from("profiles").select("full_name,role").eq("id",user.id).maybeSingle();
     if(!r.error&&r.data){
-      document.getElementById("employeeEmail").textContent=r.data.full_name||user.email||"Tài khoản";
-      document.getElementById("employeeRole").textContent=r.data.role||"admin";
+      nameEl.textContent=r.data.full_name||user.email||"Tài khoản quản trị";
+      roleEl.textContent=r.data.role==="admin"?"Quản trị":(r.data.role||"Nhân viên");
     }
-  }catch(e){}
+  }catch(e){
+    nameEl.textContent="Tài khoản đang đăng nhập";
+    roleEl.textContent="Quản trị";
+  }
 }
 async function loadDashboard(){let r=await sb.rpc("thong_ke_dashboard");if(r.error)return msg("dashboardMsg","Lỗi tải Dashboard: "+r.error.message,"msg danger");let d=r.data;document.getElementById("dashCustomers").textContent=Number(d.tong_khach||0).toLocaleString("vi-VN");document.getElementById("dashPoints").textContent=Number(d.tong_diem||0).toLocaleString("vi-VN");document.getElementById("dashMember").textContent=Number(d.member||0).toLocaleString("vi-VN");document.getElementById("dashSilver").textContent=Number(d.silver||0).toLocaleString("vi-VN");document.getElementById("dashGold").textContent=Number(d.gold||0).toLocaleString("vi-VN");document.getElementById("dashVip").textContent=Number(d.vip||0).toLocaleString("vi-VN");document.getElementById("dashVip2").textContent=Number(d.vip||0).toLocaleString("vi-VN");
 let maxTier=Math.max(1,Number(d.member||0),Number(d.silver||0),Number(d.gold||0),Number(d.vip||0));
