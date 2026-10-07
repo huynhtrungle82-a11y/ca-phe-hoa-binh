@@ -25,10 +25,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 .bar-row{display:grid;grid-template-columns:70px 1fr 34px;align-items:center;gap:8px;margin:10px 0;font-size:13px}
 .bar-track{height:18px;background:#eee;border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;width:0;border-radius:99px;background:#6b4f35;transition:width .5s ease}
-.sales-chart{height:130px;display:flex;align-items:flex-end;gap:8px;margin-top:12px;padding:8px 4px 0;border-bottom:1px solid #ddd}
-.sales-bar{flex:1;min-width:0;border-radius:8px 8px 0 0;background:#8a6748;height:8px;position:relative}
-.sales-bar span{position:absolute;bottom:-24px;left:50%;transform:translateX(-50%);font-size:11px;color:#777;white-space:nowrap}
-.sales-note{font-size:12px;color:#777;margin-top:28px}
+.sales-chart{height:22px;margin-top:12px;background:#eee;border-radius:99px;overflow:hidden}
+.sales-bar{width:0;height:100%;border-radius:99px;background:#8a6748;transition:width .5s ease}
+.sales-bar span{display:none}
+.sales-note{font-size:14px;color:#777;margin-top:10px}
 
 @media(max-width:380px){.dashboard-grid,.tier-box{grid-template-columns:1fr}}
 </style>
@@ -60,7 +60,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 <div class="bar-row"><span>Silver</span><div class="bar-track"><div id="barSilver" class="bar-fill"></div></div><b id="barSilverN">0</b></div>
 <div class="bar-row"><span>Gold</span><div class="bar-track"><div id="barGold" class="bar-fill"></div></div><b id="barGoldN">0</b></div>
 <div class="bar-row"><span>VIP</span><div class="bar-track"><div id="barVip" class="bar-fill"></div></div><b id="barVipN">0</b></div>
-<div class="chart-title">💰 Doanh số</div>
+<div class="chart-title">💰 Doanh số hiện tại</div>
 <div class="sales-chart"><div class="sales-bar" id="salesBar"><span>Tổng</span></div></div>
 <div class="sales-note">Tổng doanh số hiện tại: <b id="salesChartValue">0đ</b></div>
 </div>
@@ -91,7 +91,7 @@ document.getElementById("barSilverN").textContent=Number(d.silver||0);
 document.getElementById("barGoldN").textContent=Number(d.gold||0);
 document.getElementById("barVipN").textContent=Number(d.vip||0);
 document.getElementById("salesChartValue").textContent=Number(d.tong_doanh_so||0).toLocaleString("vi-VN")+"đ";
-document.getElementById("salesBar").style.height=Math.max(8,Math.min(100,Number(d.tong_doanh_so||0)/10000))+"%";document.getElementById("dashSales").textContent=Number(d.tong_doanh_so||0).toLocaleString("vi-VN")+"đ"}
+document.getElementById("salesBar").style.width=(Number(d.tong_doanh_so||0)>0?"100%":"0%");document.getElementById("dashSales").textContent=Number(d.tong_doanh_so||0).toLocaleString("vi-VN")+"đ"}
 async function findCustomer(){let phone=document.getElementById("phone").value.trim();if(!phone)return msg("customerMsg","Nhập số điện thoại.");let r=await sb.rpc("tim_khach_hang",{p_phone:phone});if(r.error)return msg("customerMsg","Lỗi tìm khách: "+r.error.message,"msg danger");if(!r.data||!r.data.length){show("customerCard",false);return msg("customerMsg","Không tìm thấy khách hàng.")}currentCustomer=r.data[0];msg("pointsMsg","");msg("redeemMsg","");document.getElementById("customerName").textContent=currentCustomer.name||"Khách hàng";document.getElementById("customerPhone").textContent=currentCustomer.phone||"";document.getElementById("customerTier").textContent="Hạng: "+({member:"🟤 Member",silver:"🥈 Silver",gold:"🥇 Gold",vip:"💎 VIP"}[currentCustomer.tier||"member"]||"🟤 Member");document.getElementById("customerPoints").textContent=Number(currentCustomer.total_points||0).toLocaleString("vi-VN");show("customerCard",true);await loadHistory()}
 async function loadCustomers(){let r=await sb.rpc("danh_sach_khach_hang");if(r.error)return msg("customersMsg","Lỗi tải danh sách: "+r.error.message,"msg danger");if(!r.data||!r.data.length){document.getElementById("customersList").innerHTML="Chưa có khách hàng.";return}allCustomers=r.data;renderCustomers(allCustomers);msg("customersMsg",`Có ${r.data.length} khách hàng.` ,"msg success")}
 function renderCustomers(data){document.getElementById("customersList").innerHTML=data.length?data.map(x=>`<div style="padding:12px 0;border-bottom:1px solid #eee"><strong>${x.name||"Khách hàng"}</strong><br>${x.phone||""} · Hạng: ${{member:"🟤 Member",silver:"🥈 Silver",gold:"🥇 Gold",vip:"💎 VIP"}[x.tier||"member"]||"🟤 Member"}<br><strong>${Number(x.total_points||0).toLocaleString("vi-VN")} điểm</strong></div>`).join(""):"Không tìm thấy khách hàng."}
