@@ -20,7 +20,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 .tier small{display:block;color:#777;margin-bottom:3px}
 .progress{height:8px;background:#eee;border-radius:99px;overflow:hidden;margin-top:9px}
 .progress i{display:block;height:100%;border-radius:99px;background:#6b4f35}
-.quick-amounts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.quick-amounts button{margin:0}.customer-tools{display:grid;gap:10px}.customer-search{position:relative}.customer-search input{padding-right:46px}.customer-search button{position:absolute;right:5px;top:5px;width:42px;padding:10px;margin:0;border-radius:10px}.customer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.customer-list{margin-top:12px}.customer-list.collapsed{display:none}.customer-item{padding:13px;border:1px solid #eee;border-radius:14px;margin:8px 0;background:#faf9f6}.customer-item strong{font-size:17px}.customer-meta{color:#777;font-size:13px;margin-top:4px}.customer-points{font-weight:800;font-size:16px;margin-top:6px}.profile-note{font-size:13px;color:#777;margin-top:6px}.customer-badge{display:inline-block;padding:4px 8px;border-radius:99px;background:#eee;margin-left:5px;font-size:12px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.section-head h2{margin:0}.chart-card{margin-top:18px;padding-top:4px}
+.quick-amounts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0}.quick-amounts button{margin:0}.admin-only{display:block}.employee-only{display:block}.customer-tools{display:grid;gap:10px}.customer-search{position:relative}.customer-search input{padding-right:46px}.customer-search button{position:absolute;right:5px;top:5px;width:42px;padding:10px;margin:0;border-radius:10px}.customer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.customer-list{margin-top:12px}.customer-list.collapsed{display:none}.customer-item{padding:13px;border:1px solid #eee;border-radius:14px;margin:8px 0;background:#faf9f6}.customer-item strong{font-size:17px}.customer-meta{color:#777;font-size:13px;margin-top:4px}.customer-points{font-weight:800;font-size:16px;margin-top:6px}.profile-note{font-size:13px;color:#777;margin-top:6px}.customer-badge{display:inline-block;padding:4px 8px;border-radius:99px;background:#eee;margin-left:5px;font-size:12px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.section-head h2{margin:0}.chart-card{margin-top:18px;padding-top:4px}
 .chart-title{font-size:18px;font-weight:800;margin:14px 0}
 .bar-row{display:grid;grid-template-columns:70px 1fr 34px;align-items:center;gap:8px;margin:10px 0;font-size:13px}
 .bar-track{height:18px;background:#eee;border-radius:99px;overflow:hidden}
@@ -37,7 +37,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 <div class="card" id="setup"><h1>☕ Cà Phê Hoà Bình</h1><p>Cấu hình lần đầu</p><p class="small">Dán Publishable key đã copy từ Supabase.</p><input id="key" placeholder="sb_publishable_..."><button onclick="saveKey()">Lưu và kết nối</button><div id="setupMsg"></div></div>
 <div class="card hidden" id="login"><h1>☕ Quản lý thành viên</h1><input id="email" type="email" placeholder="Email quản trị"><input id="password" type="password" placeholder="Mật khẩu"><button onclick="login()">Đăng nhập</button><div id="loginMsg"></div></div>
 <div id="app" class="hidden">
-<div class="card" id="dashboardCard">
+<div class="card admin-only" id="dashboardCard">
 <div class="dashboard-title"><span>📊</span><h2 style="margin:0">Tổng quan</h2></div>
 <p class="dashboard-sub">Tình hình thành viên và tích điểm Cà Phê Hoà Bình</p>
 <div id="dashboardMsg" class="small"></div>
@@ -72,12 +72,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f5f1e8;
 <div class="customer-item" style="cursor:default">
 <strong id="employeeEmail">Quản trị Cà Phê Hoà Bình</strong>
 <div class="customer-meta">🔐 Trạng thái: <b>Đang đăng nhập</b></div>
-<div class="customer-meta">👤 Vai trò: <b id="employeeRole">Quản trị</b></div>
+<div class="customer-meta">👤 Vai trò: <b id="employeeRole">Quản trị</b></div><div class="customer-meta">🛡️ Quyền: <b id="permissionText">Toàn quyền quản trị</b></div>
 </div>
 </div>
 
 <div class="card"><div class="section-head"><h2>👥 Quản lý khách hàng</h2></div><p class="small">Tìm nhanh, xem điểm và quản lý thành viên.</p><div class="customer-tools"><div class="customer-search"><input id="phone" inputmode="tel" placeholder="Nhập số điện thoại khách hàng"><button onclick="findCustomer()">🔎</button></div><div id="customerMsg"></div><div class="customer-actions"><button class="secondary" onclick="loadCustomers()">📋 Danh sách</button><button onclick="document.getElementById('newName').focus()">➕ Thêm khách</button></div></div></div>
-<div class="card" id="addCustomerCard"><div class="section-head"><h2>➕ Thêm khách hàng</h2></div><input id="newPhone" inputmode="tel" placeholder="Số điện thoại"><input id="newName" placeholder="Tên khách hàng"><button onclick="addCustomer()">Lưu khách hàng</button><div id="addCustomerMsg"></div></div>
+<div class="card admin-only" id="addCustomerCard"><div class="section-head"><h2>➕ Thêm khách hàng</h2></div><input id="newPhone" inputmode="tel" placeholder="Số điện thoại"><input id="newName" placeholder="Tên khách hàng"><button onclick="addCustomer()">Lưu khách hàng</button><div id="addCustomerMsg"></div></div>
 <div class="card"><div class="section-head"><h2>📋 Danh sách khách</h2><button id="toggleCustomersBtn" type="button" class="secondary" style="width:auto;padding:9px 14px;margin:0" onclick="toggleCustomers()">Thu gọn</button></div><input id="customerFilter" placeholder="🔎 Lọc theo tên hoặc số điện thoại" oninput="filterCustomers()"><div id="customersMsg"></div><div id="customersList" class="customer-list">Chưa tải danh sách.</div></div>
 <div class="card hidden" id="customerCard"><button type="button" class="secondary" onclick="backToCustomers()">← Danh sách khách hàng</button><h2 id="customerName"></h2><div id="customerPhone" class="small"></div><div id="customerTier" class="small"></div><div class="profile-note">Hồ sơ khách hàng</div><div class="points" id="customerPoints">0</div><div class="small">điểm hiện có</div><h2>💰 Tích điểm mua hàng</h2>
 <div class="quick-amounts">
@@ -113,6 +113,12 @@ async function init(k){
 function saveKey(){let k=document.getElementById("key").value.trim();if(!k)return msg("setupMsg","Hãy dán Publishable key.");localStorage.setItem("cp_hb_key",k);init(k)}
 async function login(){let email=document.getElementById("email").value.trim(),password=document.getElementById("password").value;if(!sb)return msg("loginMsg","Chưa kết nối Supabase.","msg danger");try{let r=await sb.auth.signInWithPassword({email,password});if(r.error)return msg("loginMsg",r.error.message,"msg danger");show("login",false);show("app",true);await loadDashboard()}catch(e){msg("loginMsg","Không kết nối được Supabase. Hãy tải lại trang rồi thử lại.","msg danger")}}
 async function logout(){await sb.auth.signOut();show("app",false);show("login",true)}
+function applyRoleUI(role){
+  const isAdmin=role==="admin";
+  document.querySelectorAll(".admin-only").forEach(el=>el.style.display=isAdmin?"block":"none");
+  const p=document.getElementById("permissionText");
+  if(p)p.textContent=isAdmin?"Toàn quyền quản trị":"Tích điểm, đổi điểm và tra cứu khách hàng";
+}
 async function loadEmployee(){
   const nameEl=document.getElementById("employeeEmail");
   const roleEl=document.getElementById("employeeRole");
@@ -125,11 +131,11 @@ async function loadEmployee(){
       return;
     }
     nameEl.textContent=user.email||"Tài khoản quản trị";
-    roleEl.textContent="Quản trị";
+    roleEl.textContent="Quản trị";applyRoleUI("admin");
     const r=await sb.from("profiles").select("full_name,role").eq("id",user.id).maybeSingle();
     if(!r.error&&r.data){
       nameEl.textContent=r.data.full_name||user.email||"Tài khoản quản trị";
-      roleEl.textContent=r.data.role==="admin"?"Quản trị":(r.data.role||"Nhân viên");
+      const role=r.data.role||"employee";roleEl.textContent=role==="admin"?"Quản trị":"Nhân viên";applyRoleUI(role);
     }
   }catch(e){
     nameEl.textContent="Tài khoản đang đăng nhập";
